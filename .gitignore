@@ -1,0 +1,16 @@
+# Base de datos local (SQLite se crea sola al ejecutar la app)
+facturas.db
+
+# PDFs generados (se crean temporalmente al facturar)
+*.pdf
+
+# Entorno virtual de Python (donde se instalan las librerías)
+venv/
+env/
+.env
+__pycache__/
+*.pyc
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
