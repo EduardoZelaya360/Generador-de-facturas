@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Facturas</title>
+    
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary-color: #2b7a78;
+            --primary-dark: #17252a;
+            --accent-color: #3aafa9;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #ced4da;
+            --text-color: #333333;
+            --error-color: #e63946;
+            --valid-color: #2b9348;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .container h2 {
+            color: var(--primary-dark);
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 26px;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        .search-container {
+            background-color: #e2f2f2;
+            border: 1px solid var(--accent-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn-search {
+            background-color: var(--primary-dark);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-search:hover {
+            background-color: #0d1619;
+        }
+
+        .btn-download {
+            background-color: var(--primary-color);
+        }
+
+        .btn-download:hover {
+            background-color: #235f5d;
+        }
+
+        .tabs-pill-container {
+            display: inline-flex;
+            background-color: #e9ecef;
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tab-pill {
+            padding: 8px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            background: transparent;
+            color: #6c757d;
+            transition: all 0.2s ease;
+        }
+
+        .tab-pill.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            background-color: #fff;
+        }
+
+        legend {
+            font-weight: 600;
+            color: var(--primary-color);
+            background: #e2f2f2;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .titulo-seccion {
+            font-weight: 600;
+            color: var(--primary-color);
+            background: #e2f2f2;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(43, 122, 120, 0.15);
+        }
+
+        /* --- ESTADOS DE VALIDACIÓN EN TIEMPO REAL --- */
+        .input-valido {
+            border-color: var(--valid-color) !important;
+            background-color: #f0fdf4;
+        }
+
+        .input-invalido {
+            border-color: var(--error-color) !important;
+            background-color: #fef2f2;
+        }
+
+        .mensaje-error {
+            display: block;
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 4px;
+            min-height: 14px;
+        }
+
+        .mensaje-error.oculto {
+            display: none;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        th:first-child { border-top-left-radius: 6px; }
+        th:last-child { border-top-right-radius: 6px; }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .col-desc { width: 42%; }
+        .col-num { width: 15%; }
+        .col-tasa { width: 23%; }
+        .col-acciones { width: 5%; text-align: center; }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s, transform 0.1s, opacity 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #235f5d;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-add {
+            background-color: #3aafa9;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-add:hover {
+            background-color: #2b7a78;
+        }
+
+        .btn-delete {
+            background-color: #e63946;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-delete:hover {
+            background-color: #d90429;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .footer-copy {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Generador de Facturas</h2>
+
+        <form id="form-factura" action="/facturas" method="post" enctype="multipart/form-data" novalidate onsubmit="return validarFormularioCompleto(event)">
+
+            <!-- Logo (opcional, sin validación) -->
+            <fieldset>
+                <legend>Logotipo de la Empresa</legend>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <input type="file" name="logo" accept="image/*">
+                    <span class="helper-text">Formatos permitidos: PNG, JPG. (Opcional)</span>
+                </div>
+            </fieldset>
+
+            <!-- Datos del Cliente -->
+            <fieldset>
+                <legend>Información del Cliente</legend>
+                <div class="form-group">
+                    <label>Nombre del Cliente / Razón Social *</label>
+                    <input type="text" id="input-nombre-cliente" name="nombre_cliente" required
+                           placeholder="Ej. Comercial S.A."
+                           oninput="validarNombre()">
+                    <span class="mensaje-error oculto" id="error-nombre"></span>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>RTN (Registro Tributario Nacional) *</label>
+                        <input type="text" id="input-rtn-cliente" name="rtn_cliente" required
+                               maxlength="14" placeholder="13 o 14 dígitos numéricos"
+                               oninput="validarRTN()" onblur="cargarHistorialPorRtn()">
+                        <span class="mensaje-error oculto" id="error-rtn"></span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span class="titulo-seccion">Gestión de Productos</span>
+                    <div class="tabs-pill-container">
+                        <button type="button" id="btn-crear-items" class="tab-pill active" onclick="cambiarPestanaItems('crear')">Crear Nueva factura</button>
+                        <button type="button" id="btn-historial-rtn" class="tab-pill" onclick="cambiarPestanaItems('historial')">Ver Historial</button>
+                    </div>
+                </div>
+
+                <div id="seccion-crear-items">
+                    <table id="tabla-productos">
+                        <thead>
+                            <tr>
+                                <th class="col-desc">Descripción</th>
+                                <th class="col-num">Cant.</th>
+                                <th class="col-num">Precio Unit. (L.)</th>
+                                <th class="col-tasa">Tasa ISV</th>
+                                <th class="col-acciones">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input type="text" class="campo-descripcion" name="descripciones" required
+                                           placeholder="Descripción del producto" oninput="validarFilaProducto(this)">
+                                    <span class="mensaje-error oculto">Requerido</span>
+                                </td>
+                                <td>
+                                    <input type="number" class="campo-cantidad" name="cantidades" min="1" value="1" required
+                                           oninput="validarFilaProducto(this)">
+                                    <span class="mensaje-error oculto">Requerido</span>
+                                </td>
+                                <td>
+                                    <input type="number" class="campo-precio" name="precios" min="0" step="0.01" required
+                                           placeholder="0.00" oninput="validarFilaProducto(this)">
+                                    <span class="mensaje-error oculto">Requerido</span>
+                                </td>
+                                <td>
+                                    <select name="tasas">
+                                        <option value="exento">Exento</option>
+                                        <option value="exonerado">Exonerado</option>
+                                        <option value="15" selected>Gravado 15%</option>
+                                        <option value="18">Gravado 18%</option>
+                                    </select>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-delete" onclick="eliminarFila(this)" title="Eliminar fila">X</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <button type="button" class="btn-add" onclick="agregarFila()">+ Agregar otro producto</button>
+                </div>
+
+                <div id="seccion-historial-rtn" style="display: none;">
+                    <div style="padding: 15px; background-color: #f8f9fa; border-radius: 6px; border: 1px dashed var(--border-color); text-align: center; color: #6c757d;">
+                        <p style="margin: 0; font-size: 13px;">
+                            Ingrese un RTN en la sección superior para cargar automáticamente el historial de facturación de este cliente.
+                        </p>
+                    </div>
+                </div>
+            </fieldset>
+            <button type="submit" class="btn-submit">Generar Factura y Descargar PDF</button>
+        </form>
+    </div>
+
+    <footer class="footer-copy">
+        &copy; 2026 Generador de Facturas. Elaborado por Evon Zelaya &amp; Allison Aguilera.
+    </footer>
+
+<script>
+    // Configuración global del tema SweetAlert2 adaptado a la paleta de colores del formulario
+    const SwalCustom = Swal.mixin({
+        confirmButtonColor: '#2b7a78',
+        cancelButtonColor: '#e63946'
+    });
+
+    // =====================================================================
+    // VALIDACIÓN: Nombre del cliente (obligatorio, mínimo 3 caracteres)
+    // =====================================================================
+    function validarNombre() {
+        const input = document.getElementById('input-nombre-cliente');
+        const error = document.getElementById('error-nombre');
+        const valor = input.value.trim();
+
+        if (valor.length === 0) {
+            marcarInvalido(input, error, 'El nombre es obligatorio.');
+            return false;
+        }
+        if (valor.length < 3) {
+            marcarInvalido(input, error, 'Debe tener al menos 3 caracteres.');
+            return false;
+        }
+        marcarValido(input, error);
+        return true;
+    }
+
+    // =====================================================================
+    // VALIDACIÓN: RTN (obligatorio, solo números, 13 o 14 dígitos)
+    // =====================================================================
+    function validarRTN() {
+        const input = document.getElementById('input-rtn-cliente');
+        const error = document.getElementById('error-rtn');
+
+        input.value = input.value.replace(/\D/g, '');
+        const valor = input.value;
+
+        if (valor.length === 0) {
+            marcarInvalido(input, error, 'El RTN es obligatorio.');
+            return false;
+        }
+        if (valor.length < 13 || valor.length > 14) {
+            marcarInvalido(input, error, `Debe tener 13 o 14 dígitos (llevas ${valor.length}).`);
+            return false;
+        }
+        marcarValido(input, error);
+        return true;
+    }
+
+    // =====================================================================
+    // VALIDACIÓN: Filas de productos (descripción, cantidad, precio)
+    // =====================================================================
+    function validarFilaProducto(input) {
+        const celda = input.closest('td');
+        const error = celda.querySelector('.mensaje-error');
+        const valor = input.value.trim();
+
+        let esValido = true;
+        let mensaje = 'Requerido';
+
+        if (input.classList.contains('campo-descripcion')) {
+            esValido = valor.length > 0;
+        } else if (input.classList.contains('campo-cantidad')) {
+            esValido = valor !== '' && Number(valor) >= 1;
+            mensaje = 'Cant. inválida';
+        } else if (input.classList.contains('campo-precio')) {
+            esValido = valor !== '' && Number(valor) >= 0;
+            mensaje = 'Precio inválido';
+        }
+
+        if (esValido) {
+            marcarValido(input, error);
+        } else {
+            marcarInvalido(input, error, mensaje);
+        }
+        return esValido;
+    }
+
+    // =====================================================================
+    // HELPERS: aplicar verde/rojo visualmente
+    // =====================================================================
+    function marcarValido(input, spanError) {
+        input.classList.remove('input-invalido');
+        input.classList.add('input-valido');
+        if (spanError) {
+            spanError.textContent = '';
+            spanError.classList.add('oculto');
+        }
+    }
+
+    function marcarInvalido(input, spanError, mensaje) {
+        input.classList.remove('input-valido');
+        input.classList.add('input-invalido');
+        if (spanError) {
+            spanError.textContent = mensaje;
+            spanError.classList.remove('oculto');
+        }
+    }
+
+    // =====================================================================
+    // Validación completa al enviar el formulario (integrado con SweetAlert2)
+    // =====================================================================
+    function validarFormularioCompleto(evento) {
+        const nombreValido = validarNombre();
+        const rtnValido = validarRTN();
+
+        let filasValidas = true;
+        document.querySelectorAll('#tabla-productos tbody tr').forEach(fila => {
+            const campos = fila.querySelectorAll('.campo-descripcion, .campo-cantidad, .campo-precio');
+            campos.forEach(campo => {
+                if (!validarFilaProducto(campo)) {
+                    filasValidas = false;
+                }
+            });
+        });
+
+        if (!nombreValido || !rtnValido || !filasValidas) {
+            evento.preventDefault();
+            
+            SwalCustom.fire({
+                icon: 'error',
+                title: 'Campos incompletos',
+                text: 'Por favor, corrige los campos marcados en rojo antes de continuar.',
+                confirmButtonText: 'Entendido'
+            });
+
+            return false;
+        }
+
+        // Alerta opcional de notificación de generación exitosa
+        SwalCustom.fire({
+            icon: 'success',
+            title: 'Generando factura...',
+            text: 'Tu documento se procesará en un momento.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+
+        limpiarDespuesDeEnvio();
+        return true;
+    }
+
+    // =====================================================================
+    // Pestañas (crear / historial)
+    // =====================================================================
+    function cambiarPestanaItems(tipo) {
+        const btnCrear = document.getElementById('btn-crear-items');
+        const btnHistorial = document.getElementById('btn-historial-rtn');
+        const secCrear = document.getElementById('seccion-crear-items');
+        const secHistorial = document.getElementById('seccion-historial-rtn');
+
+        if (tipo === 'crear') {
+            secCrear.style.display = 'block';
+            secHistorial.style.display = 'none';
+            btnCrear.className = 'tab-pill active';
+            btnHistorial.className = 'tab-pill';
+        } else {
+            secCrear.style.display = 'none';
+            secHistorial.style.display = 'block';
+            btnHistorial.className = 'tab-pill active';
+            btnCrear.className = 'tab-pill';
+
+            const rtn = document.getElementById('input-rtn-cliente').value.trim();
+            if (rtn) {
+                cargarHistorialPorRtn();
+            }
+        }
+    }
+
+    async function cargarHistorialPorRtn() {
+        const rtnInput = document.getElementById('input-rtn-cliente');
+        const rtn = rtnInput.value.trim();
+        const contenedorHistorial = document.getElementById('seccion-historial-rtn');
+
+        if (!rtn) return;
+
+        contenedorHistorial.innerHTML = `
+            <div style="padding: 15px; text-align: center; color: #6c757d;">
+                <p>Buscando facturas para el RTN ${rtn}...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`/facturas/buscar/${rtn}`);
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    contenedorHistorial.innerHTML = `
+                        <div style="padding: 15px; text-align: center; color: #e63946;">
+                            <p>No se encontraron facturas registradas para el RTN: <strong>${rtn}</strong></p>
+                        </div>
+                    `;
+                    return;
+                }
+                throw new Error("Error al consultar el servidor");
+            }
+
+            const data = await response.json();
+
+            let htmlTabla = `
+                <div style="padding: 15px; background-color: #f8f9fa; border-radius: 6px; border: 1px dashed var(--border-color);">
+                    <p style="margin: 0 0 10px 0; font-size: 13px; color: #2b7a78; font-weight: 600;">
+                        Cliente: ${data.cliente} (RTN: ${data.rtn})
+                    </p>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: white;">
+                        <thead>
+                            <tr style="background-color: var(--primary-color); color: white; font-size: 12px;">
+                                <th style="padding: 8px;">Correlativo</th>
+                                <th style="padding: 8px;">Fecha</th>
+                                <th style="padding: 8px;">Total (L.)</th>
+                                <th style="padding: 8px; text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            data.facturas.forEach(f => {
+                htmlTabla += `
+                    <tr style="border-bottom: 1px solid #dee2e6; font-size: 13px;">
+                        <td style="padding: 8px;">${f.correlativo}</td>
+                        <td style="padding: 8px;">${f.fecha}</td>
+                        <td style="padding: 8px;">L. ${f.total.toFixed(2)}</td>
+                        <td style="padding: 8px; text-align: center; display: flex; gap: 6px; justify-content: center;">
+                            <a href="/buscar_factura?numero_factura=${f.id}&accion=previa"
+                               class="btn-search"
+                               style="padding: 4px 8px; font-size: 11px;"
+                               target="_blank"
+                               title="Ver factura en el navegador">
+                               Vista Previa
+                            </a>
+                            <a href="/buscar_factura?numero_factura=${f.id}&accion=descargar"
+                               class="btn-search btn-download"
+                               style="padding: 4px 8px; font-size: 11px;"
+                               title="Descargar PDF">
+                               Descargar
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            htmlTabla += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            contenedorHistorial.innerHTML = htmlTabla;
+
+        } catch (error) {
+            contenedorHistorial.innerHTML = `
+                <div style="padding: 15px; text-align: center; color: #e63946;">
+                    <p>Ocurrió un error al conectar con el servidor.</p>
+                </div>
+            `;
+        }
+    }
+
+    // =====================================================================
+    // Filas de productos: agregar / eliminar (con SweetAlert2)
+    // =====================================================================
+    function agregarFila() {
+        const tbody = document.querySelector("#tabla-productos tbody");
+        const primeraFila = tbody.querySelector("tr");
+        const nuevaFila = primeraFila.cloneNode(true);
+
+        nuevaFila.querySelectorAll("input").forEach(input => {
+            if (input.type === "number" && input.name === "cantidades") {
+                input.value = "1";
+            } else {
+                input.value = "";
+            }
+            input.classList.remove('input-valido', 'input-invalido');
+        });
+
+        nuevaFila.querySelectorAll('.mensaje-error').forEach(span => {
+            span.textContent = '';
+            span.classList.add('oculto');
+        });
+
+        tbody.appendChild(nuevaFila);
+    }
+
+    function eliminarFila(boton) {
+        const tbody = document.querySelector("#tabla-productos tbody");
+        const filas = tbody.querySelectorAll("tr");
+
+        if (filas.length > 1) {
+            boton.closest("tr").remove();
+        } else {
+            SwalCustom.fire({
+                icon: 'warning',
+                title: 'Acción no permitida',
+                text: 'La factura debe contener al menos un producto.',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    }
+
+    function limpiarDespuesDeEnvio() {
+        setTimeout(() => {
+            document.getElementById('form-factura').reset();
+
+            const tbody = document.querySelector("#tabla-productos tbody");
+            const filas = tbody.querySelectorAll("tr");
+
+            for (let i = 1; i < filas.length; i++) {
+                filas[i].remove();
+            }
+
+            document.querySelectorAll('.input-valido, .input-invalido').forEach(el => {
+                el.classList.remove('input-valido', 'input-invalido');
+            });
+            document.querySelectorAll('.mensaje-error').forEach(span => {
+                span.textContent = '';
+                span.classList.add('oculto');
+            });
+        }, 1500);
+    }
+</script>
+</body>
+</html>
